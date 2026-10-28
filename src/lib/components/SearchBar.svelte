@@ -894,10 +894,16 @@
 		requestAnimationFrame(recomputeResultsMaxHeight);
 	});
 
+	// When Enter last ran a row. The keydown below owns Enter, so the form's own
+	// submit (and a keypress that follows the keydown in some browsers) must not
+	// also open the web search a second time.
+	let lastEnterAt = 0;
+	const enterJustHandled = () => Date.now() - lastEnterAt < 1000;
+
 	function handleSubmit(e) {
 		// Enter is handled in the keydown below; a submit only gets here with
 		// nothing to run (no results yet), and then it is a web search.
-		if (!query.trim()) e.preventDefault();
+		if (!query.trim() || enterJustHandled()) e.preventDefault();
 	}
 
 	function handleFocus() {
@@ -987,6 +993,9 @@
 			const item = flatItems.find((i) => i.key === selectedKey);
 			if (item) {
 				e.preventDefault();
+				// A held key or a repeated event must not run a second row.
+				if (e.repeat || enterJustHandled()) return;
+				lastEnterAt = Date.now();
 				runItem(item, e);
 			}
 		}
@@ -1083,6 +1092,7 @@
 			onfocus={handleFocus}
 			oninput={handleInput}
 			onkeydown={handleInputKeydown}
+			onkeypress={(e) => { if (e.key === 'Enter' && enterJustHandled()) e.preventDefault(); }}
 		/>
 
 		{#if query}
