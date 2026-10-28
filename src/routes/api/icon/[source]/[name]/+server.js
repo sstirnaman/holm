@@ -5,22 +5,62 @@
 // visitors' IPs and Referer never reach those CDNs. Only the three known
 // sources and plain slugs are accepted: this is not an open proxy.
 //
-// Local first: <ICON_LIBRARY_DIR>/<source>/<name>.svg (default ./icon-library,
-// i.e. /app/icon-library), then, for si, the Simple Icons package Holm bundles.
-// Only after that does it go online, and `icons.source: local` never does.
+// Local first: <ICONS_DIR>/<source>/<name>.svg (default ./icons, i.e. /app/icons
+// in the container), then for di also <ICONS_DIR>/<name>.svg, then, for si, the
+// Simple Icons package Holm bundles. Only after that does it go online, and
+// `icons.source: local` never does. PNG and WebP files work as well as SVG.
 
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { getConfig } from '$lib/server/config.js';
 import { simpleIconSvg } from '$lib/server/brandColors.js';
 
-async function localIcon(source, name) {
+const TYPES = { svg: 'image/svg+xml', png: 'image/png', webp: 'image/webp' };
+
+function iconsDir() {
+	return resolve(process.env.ICONS_DIR || process.env.ICON_LIBRARY_DIR || 'icons');
+}
+
+// Said once, in the log, so a folder that is missing or unreadable is
+// visible instead of icons quietly coming from the web.
+let reported = false;
+async function reportFolder() {
+	reported = true;
+	const dir = iconsDir();
 	try {
-		return await readFile(join(resolve(process.env.ICON_LIBRARY_DIR || 'icon-library'), source, `${name}.svg`));
-	} catch {
-		// No file for it: try the bundled set, then the web.
+		const subs = (await readdir(dir)).filter((n) => ['di', 'si', 'lucide'].includes(n));
+		console.log(`[holm] icons: reading local icons from ${dir}${subs.length ? ` (${subs.join(', ')})` : ' (no di/, si/ or lucide/ folder in it)'}`);
+	} catch (err) {
+		console.log(`[holm] icons: no readable folder at ${dir} (${err.code || err.message}); icons come from the web`);
 	}
-	return source === 'si' ? simpleIconSvg(name.toLowerCase()) : null;
+}
+
+const warned = new Set();
+
+async function localIcon(source, name) {
+	if (!reported) await reportFolder();
+	const dir = iconsDir();
+	const names = [...new Set([name, name.toLowerCase()])];
+	// Flat files (icons/plex.svg) count for Dashboard Icons only: an si or
+	// lucide name can mean a different picture.
+	const folders = source === 'di' ? [join(dir, source), dir] : [join(dir, source)];
+	for (const folder of folders) {
+		for (const n of names) {
+			for (const [ext, type] of Object.entries(TYPES)) {
+				const file = join(folder, `${n}.${ext}`);
+				try {
+					return { body: await readFile(file), type };
+				} catch (err) {
+					if (err.code !== 'ENOENT' && err.code !== 'ENOTDIR' && err.code !== 'EISDIR' && !warned.has(file)) {
+						warned.add(file);
+						console.warn(`[holm] icons: can't read ${file} (${err.code || err.message}); is it readable by uid 1000?`);
+					}
+				}
+			}
+		}
+	}
+	const svg = source === 'si' ? simpleIconSvg(name.toLowerCase()) : null;
+	return svg ? { body: svg, type: TYPES.svg } : null;
 }
 
 const SOURCES = {
@@ -68,13 +108,13 @@ const SVG_HEADERS = {
 
 export async function GET({ params }) {
 	const toUrl = SOURCES[params.source];
-	const name = params.name.replace(/\.svg$/i, '');
+	const name = params.name.replace(/\.(svg|png|webp)$/i, '');
 	if (!toUrl || !SLUG.test(name)) return new Response('Not found', { status: 404 });
 
 	const local = await localIcon(params.source, name);
 	if (local) {
-		return new Response(local, {
-			headers: { ...SVG_HEADERS, 'content-type': 'image/svg+xml', 'cache-control': 'public, max-age=3600' }
+		return new Response(local.body, {
+			headers: { ...SVG_HEADERS, 'content-type': local.type, 'cache-control': 'public, max-age=3600' }
 		});
 	}
 	if (getConfig().icons?.source === 'local') {

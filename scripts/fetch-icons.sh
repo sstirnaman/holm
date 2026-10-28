@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download the icons your Holm config uses into ./icon-library, so the
+# Download the icons your Holm config uses into ./icons, so the
 # dashboard never has to fetch them from the web.
 #
 #   ./scripts/fetch-icons.sh                  # everything config.yml + the Popular list use
@@ -12,7 +12,7 @@
 set -u
 cd "$(dirname "$0")/.."
 
-OUT="${ICON_LIBRARY_DIR:-icon-library}"
+OUT="${ICONS_DIR:-${ICON_LIBRARY_DIR:-icons}}"
 CONFIG="${CONFIG_PATH:-config.yml}"
 DI_BASE_URL="${DI_BASE_URL:-https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg}"
 LUCIDE_BASE_URL="${LUCIDE_BASE_URL:-https://cdn.jsdelivr.net/npm/lucide-static/icons}"

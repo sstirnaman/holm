@@ -16,7 +16,7 @@ Full URLs and `/custom-icons/...` paths are not affected.
 
 For `/api/icon/<source>/<name>`, Holm tries:
 
-1. `icon-library/<source>/<name>.svg` (`<source>` is `di`, `si` or `lucide`)
+1. `icons/<source>/<name>.svg` (`<source>` is `di`, `si` or `lucide`). For Dashboard Icons a flat `icons/<name>.svg` works too, and `.png` and `.webp` files are accepted as well as `.svg`
 2. `si` only: the Simple Icons package that ships inside Holm, in the brand colour (so `si:` icons never need the web)
 3. The web, unless `icons.source` is `local`
 
@@ -26,13 +26,13 @@ For `/api/icon/<source>/<name>`, Holm tries:
 ./scripts/fetch-icons.sh        # reads config.yml and the Popular apps list
 ```
 
-This downloads the icons you use into `icon-library/di/` (and the three Lucide icons the onboarding slides need into `icon-library/lucide/`). Run it again after adding apps. Extra names can be given as arguments: `./scripts/fetch-icons.sh plex lucide:bell`. It prints the names it could not find.
+This downloads the icons you use into `icons/di/` (and the three Lucide icons the onboarding slides need into `icons/lucide/`). Run it again after adding apps. Extra names can be given as arguments: `./scripts/fetch-icons.sh plex lucide:bell`. It prints the names it could not find.
 
 Mount the folder:
 
 ```yaml
     volumes:
-      - ./icon-library:/app/icon-library:ro
+      - ./icons:/app/icons:ro
 ```
 
 Optionally forbid the web entirely, in `config.yml`:
@@ -42,11 +42,17 @@ icons:
   source: local
 ```
 
-`ICON_LIBRARY_DIR` overrides the folder inside the container.
+`ICONS_DIR` overrides the folder inside the container (default `/app/icons`).
+
+## If it doesn't seem to work
+
+- **Check the log.** `docker logs <container>` shows one line on the first icon request, either `reading local icons from /app/icons (di, …)` or `no readable folder at /app/icons`. A `can't read <file>` warning means a permission problem: the container runs as uid 1000, so `chmod -R a+rX ./icons`.
+- **Browsers keep icons for up to a day.** An icon that was already shown from the web is cached by the browser; hard-refresh (Ctrl+F5) or clear the site's cache once.
+- **Names must match.** `hacker-news.svg`, not `Hacker News.svg`. Open `http://<host>:3000/api/icon/di/<name>.svg` to see what Holm returns for a name.
 
 ## Getting icons by hand
 
-Save the SVG as `icon-library/di/<name>.svg`, using the name you put in `config.yml` (lower-case, spaces as hyphens). Icons you add yourself this way also override the online version of the same name.
+Save the SVG as `icons/di/<name>.svg`, using the name you put in `config.yml` (lower-case, spaces as hyphens). Icons you add yourself this way also override the online version of the same name.
 
 ## Notes
 
