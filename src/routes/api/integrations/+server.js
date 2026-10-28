@@ -49,5 +49,10 @@ function pickOperatorDefaults(adapter, operator) {
 			out[field.key] = operator[field.fromOperatorDefault];
 		}
 	}
+	// Where the browser reaches the app, when that differs from `default_url`.
+	// Only plain http(s) goes to the page, where it becomes a link.
+	if (typeof operator.public_url === 'string' && /^https?:\/\//i.test(operator.public_url.trim())) {
+		out.publicUrl = operator.public_url.trim();
+	}
 	return out;
 }

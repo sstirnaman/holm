@@ -106,10 +106,13 @@ const diToSimpleIcon = {
 function resolveUrl(str) {
 	if (!str) return null;
 	if (str.startsWith('http') || str.startsWith('/')) return str;
-	const name = str.replace(/^(di|si|sh):/, '');
+	// Names typed with spaces or capitals still resolve: "Hacker News" becomes
+	// hacker-news (Dashboard Icons are kebab-case) and "Stack Overflow" becomes
+	// stackoverflow (Simple Icons slugs are bare a-z0-9).
+	const name = str.replace(/^(di|si|sh):/, '').trim().toLowerCase();
 	const prefix = str.match(/^(di|si|sh):/)?.[1] || 'di';
-	if (prefix === 'si') return `${SI_CDN}/${diToSimpleIcon[name] || name}`;
-	return `${DI_CDN}/${name}.svg`;
+	if (prefix === 'si') return `${SI_CDN}/${diToSimpleIcon[name] || name.replace(/[^a-z0-9]/g, '')}`;
+	return `${DI_CDN}/${name.replace(/\s+/g, '-')}.svg`;
 }
 
 export function resolveIcon(icon, iconMono, brandColor, brandFg, brandExplicit) {

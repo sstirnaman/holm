@@ -4,6 +4,24 @@
 // costs one round-trip to Holm instead of ~40 to jsdelivr/simpleicons, and
 // visitors' IPs and Referer never reach those CDNs. Only the three known
 // sources and plain slugs are accepted: this is not an open proxy.
+//
+// Local first: <ICON_LIBRARY_DIR>/<source>/<name>.svg (default ./icon-library,
+// i.e. /app/icon-library), then, for si, the Simple Icons package Holm bundles.
+// Only after that does it go online, and `icons.source: local` never does.
+
+import { readFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { getConfig } from '$lib/server/config.js';
+import { simpleIconSvg } from '$lib/server/brandColors.js';
+
+async function localIcon(source, name) {
+	try {
+		return await readFile(join(resolve(process.env.ICON_LIBRARY_DIR || 'icon-library'), source, `${name}.svg`));
+	} catch {
+		// No file for it: try the bundled set, then the web.
+	}
+	return source === 'si' ? simpleIconSvg(name.toLowerCase()) : null;
+}
 
 const SOURCES = {
 	di: (name) => `https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/${name}.svg`,
@@ -52,6 +70,16 @@ export async function GET({ params }) {
 	const toUrl = SOURCES[params.source];
 	const name = params.name.replace(/\.svg$/i, '');
 	if (!toUrl || !SLUG.test(name)) return new Response('Not found', { status: 404 });
+
+	const local = await localIcon(params.source, name);
+	if (local) {
+		return new Response(local, {
+			headers: { ...SVG_HEADERS, 'content-type': 'image/svg+xml', 'cache-control': 'public, max-age=3600' }
+		});
+	}
+	if (getConfig().icons?.source === 'local') {
+		return new Response('Not found', { status: 404, headers: { 'cache-control': 'public, max-age=3600' } });
+	}
 
 	const key = `${params.source}:${name}`;
 	let entry = cache.get(key);

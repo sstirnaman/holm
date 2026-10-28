@@ -77,13 +77,18 @@
 	});
 
 
+	// A saved bookmark keeps the icon it was added with. Popular ones take the
+	// current icon from the list instead, so a corrected slug also fixes tiles
+	// that were added before the fix.
+	const popularIcons = new Map(POPULAR_APPS.map((p) => [p.id, p.icon]));
+
 	const customCatalog = $derived.by(() => {
 		const list = $prefs.customApps || [];
 		return list.map((a) => ({
 			id: a.id,
 			name: a.name,
 			url: a.url,
-			icon: resolveIcon(a.icon),
+			icon: resolveIcon(popularIcons.get(a.id) ?? a.icon),
 			selfHosted: false,
 			default: true,
 			ios: null,

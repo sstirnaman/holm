@@ -3,12 +3,20 @@
 
 import * as icons from 'simple-icons';
 
-// simple-icons slug → hex
+// simple-icons slug → hex, and slug → icon (for serving the SVG without the CDN)
 const siSlugToHex = {};
+const siBySlug = {};
 for (const [key, icon] of Object.entries(icons)) {
 	if (key.startsWith('si') && icon?.slug) {
 		siSlugToHex[icon.slug] = icon.hex;
+		siBySlug[icon.slug] = icon;
 	}
+}
+
+/** The bundled Simple Icons SVG for a slug, in its brand colour like cdn.simpleicons.org, or null. */
+export function simpleIconSvg(slug) {
+	const icon = Object.hasOwn(siBySlug, slug) ? siBySlug[slug] : null;
+	return icon?.svg ? icon.svg.replace('<svg ', `<svg fill="#${icon.hex}" `) : null;
 }
 
 // dashboard-icons slug → simple-icons slug (for names that differ)

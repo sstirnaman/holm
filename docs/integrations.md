@@ -30,6 +30,17 @@ Holm has two kinds of app support.
 
 Integrations are marked Alpha in the UI. The widgets so far are Navidrome's player and the Calendar's reminders and upcoming events.
 
+**Docker networking and `public_url`.** Holm may reach an app at one address (for example `http://host.docker.internal:4533` on Docker Desktop for Mac) while your browser needs another (`http://192.168.1.10:4533`). Keep the first as `default_url` and add the second as `public_url`:
+
+```yaml
+integrations:
+  navidrome:
+    default_url: "http://host.docker.internal:4533"   # what Holm connects to
+    public_url: "http://192.168.1.10:4533"            # what links open in your browser
+```
+
+Holm keeps using `default_url` for every request, and users don't see or need `public_url`. Audio and covers already pass through Holm, so only links that open in the browser use it: result links, "More in …", and Jellyfin's Quick Connect link. `public_url` is read by Navidrome and Jellyfin so far (and it has to be a plain `http://` or `https://` address); the other integrations still link to `default_url`.
+
 ## Enabling an integration (operator)
 
 An integration is invisible to users until it is listed under `integrations:` in `config.yml`:

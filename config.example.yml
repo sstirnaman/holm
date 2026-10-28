@@ -273,6 +273,7 @@ integrations:
     enabled: true
     name: "Jellyfin"
     default_url: "https://jellyfin.example.com"
+    # public_url: "http://192.168.1.10:8096"  # Optional: the address browsers use, if it differs from default_url
     surfaces:
       search: true
       widgets: false
@@ -287,6 +288,8 @@ integrations:
     enabled: true
     name: "Music"
     default_url: "https://music.example.com"
+    # public_url: "http://192.168.1.10:4533"  # Optional: the address browsers use, if it differs from default_url
+    #                                         # (e.g. default_url is host.docker.internal). Result links open here.
     surfaces:
       search: true
       widgets: true                           # Player: users can turn on playing songs from search in Holm

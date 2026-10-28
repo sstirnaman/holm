@@ -97,7 +97,7 @@ const adapter = {
 			// All music: compact cover-and-title cards, not posters.
 			layout: 'tracks',
 			mode: 'inline',
-			async query({ config, query, limit, fetch }) {
+			async query({ config, query, limit, fetch, publicUrl }) {
 				if (!config?.url || !config?.token) return { results: [] };
 				const trimmed = (query || '').trim();
 				if (!trimmed) return { results: [] };
@@ -118,7 +118,7 @@ const adapter = {
 					throw new Error(`Navidrome search failed: ${body?.error?.message || 'unexpected reply'}`);
 				}
 				const found = body.searchResult3 || {};
-				const base = stripTrailingSlash(config.url);
+				const base = linkBase(config, publicUrl);
 				const items = [
 					...(found.artist || []).map((a) => ({
 						id: a.id,
@@ -207,8 +207,26 @@ const adapter = {
 	}
 };
 
+// An operator-set address that ends up in an href: plain http(s) only.
+function safePublicUrl(value) {
+	if (typeof value !== 'string' || !value.trim()) return null;
+	try {
+		const u = new URL(value.trim());
+		return u.protocol === 'http:' || u.protocol === 'https:' ? stripTrailingSlash(u.href) : null;
+	} catch {
+		return null;
+	}
+}
+
 function stripTrailingSlash(url) {
 	return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+// Where result links point. Holm talks to `config.url`, but the person's
+// browser may reach Navidrome at a different address: the operator's
+// `public_url` wins when there is one (see safePublicUrl).
+function linkBase(config, publicUrl) {
+	return safePublicUrl(publicUrl) || stripTrailingSlash(config.url);
 }
 
 function tokenFor(password) {

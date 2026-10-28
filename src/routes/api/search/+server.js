@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getSessionUser } from '$lib/server/session.js';
-import { getAdapter } from '$lib/server/integrations/index.js';
+import { getAdapter, getOperatorDefaults } from '$lib/server/integrations/index.js';
 import { getConnection } from '$lib/server/integrations/store.js';
 import { withDeadline, describeFetchError } from '$lib/server/integrations/deadline.js';
 import { adapterContext } from '$lib/server/integrations/linked.js';
@@ -66,6 +66,7 @@ export async function POST({ cookies, url, request, fetch }) {
 		const pending = searchProvider.query({
 			...(await adapterContext(user.username, adapter, conn)),
 			config: conn.config,
+			publicUrl: getOperatorDefaults(adapter.id)?.public_url,
 			query,
 			limit,
 			timeZone,

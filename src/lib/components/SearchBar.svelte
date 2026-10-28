@@ -102,7 +102,7 @@
 					// Navidrome's player widget: songs play in Holm instead of opening.
 					player: it.userState?.surfaces?.widgets === true && (it.availableSurfaces || []).includes('widgets'),
 					// The Calendar's CalDAV URL is no page to browse; its web address is.
-					searchUrl: it.userState?.config?.webUrl || it.operatorDefaults?.url || it.userState?.config?.url || null
+					searchUrl: it.userState?.config?.webUrl || it.operatorDefaults?.publicUrl || it.operatorDefaults?.url || it.userState?.config?.url || null
 				});
 			}
 		}

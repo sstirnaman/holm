@@ -7,7 +7,7 @@ export const POPULAR_APPS = [
 	// Dev
 	{ id: 'pop:github', name: 'GitHub', url: 'https://github.com', icon: 'github' },
 	{ id: 'pop:gitlab', name: 'GitLab', url: 'https://gitlab.com', icon: 'gitlab' },
-	{ id: 'pop:stackoverflow', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'stackoverflow' },
+	{ id: 'pop:stackoverflow', name: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'si:stackoverflow' }, // not in Dashboard Icons
 	// AI
 	{ id: 'pop:claude', name: 'Claude', url: 'https://claude.ai', icon: 'claude-ai' },
 	{ id: 'pop:chatgpt', name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'chatgpt' },
@@ -28,7 +28,7 @@ export const POPULAR_APPS = [
 	{ id: 'pop:whatsapp', name: 'WhatsApp', url: 'https://web.whatsapp.com', icon: 'whatsapp' },
 	// Social / news
 	{ id: 'pop:reddit', name: 'Reddit', url: 'https://reddit.com', icon: 'reddit' },
-	{ id: 'pop:hn', name: 'Hacker News', url: 'https://news.ycombinator.com', icon: 'hackernews' },
+	{ id: 'pop:hn', name: 'Hacker News', url: 'https://news.ycombinator.com', icon: 'hacker-news' },
 	{ id: 'pop:x', name: 'X', url: 'https://x.com', icon: 'x' },
 	{ id: 'pop:linkedin', name: 'LinkedIn', url: 'https://linkedin.com', icon: 'linkedin' },
 	// Media

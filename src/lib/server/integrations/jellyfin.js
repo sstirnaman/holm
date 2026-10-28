@@ -56,7 +56,7 @@ const adapter = {
 		label: 'Sign in with Quick Connect',
 		help: 'In Jellyfin, open your **profile → Quick Connect** and enter this code.',
 
-		async start({ config, fetch }) {
+		async start({ config, fetch, publicUrl }) {
 			const base = stripTrailingSlash(config.url);
 			// One device id per sign-in: Jellyfin keeps one session per device,
 			// so this shows up as its own "Holm" entry under Devices.
@@ -71,7 +71,7 @@ const adapter = {
 			if (!res.ok) return { error: `Couldn’t start Quick Connect (${res.status})` };
 			const data = await res.json();
 			if (!data?.Secret || !data?.Code) return { error: 'Jellyfin sent an unexpected reply' };
-			return { code: String(data.Code), link: `${base}/web/#/quickconnect`, state: { secret: data.Secret, deviceId } };
+			return { code: String(data.Code), link: `${linkBase(config, publicUrl)}/web/#/quickconnect`, state: { secret: data.Secret, deviceId } };
 		},
 
 		async poll({ config, state, fetch }) {
@@ -140,7 +140,7 @@ const adapter = {
 			kind: 'media',
 			shelf: 'video',
 			mode: 'inline',
-			async query({ config, query, limit, fetch }) {
+			async query({ config, query, limit, fetch, publicUrl }) {
 				if (!config?.url || !config?.accessToken) return { results: [] };
 				const trimmed = (query || '').trim();
 				if (!trimmed) return { results: [] };
@@ -180,7 +180,7 @@ const adapter = {
 							thumbnail: imageId
 								? `/api/integrations/jellyfin/proxy/image/${encodeURIComponent(imageId)}?maxHeight=${POSTER_HEIGHT}`
 								: undefined,
-							href: `${base}/web/#/details?id=${encodeURIComponent(item.Id)}${server}`,
+							href: `${linkBase(config, publicUrl)}/web/#/details?id=${encodeURIComponent(item.Id)}${server}`,
 							// Movies and shows open a detail view; Play is its button.
 							...(VIDEO_TYPES.has(item.Type) ? { openLabel: 'Play', detail: { id: item.Id } } : {}),
 							meta: { kind: 'media', tmdb: tmdbKey(item) }
@@ -259,6 +259,21 @@ function formatRuntime(minutes) {
 	if (!minutes) return '';
 	const h = Math.floor(minutes / 60);
 	return h ? `${h}h ${minutes % 60}m` : `${minutes}m`;
+}
+
+// Where links that open in the person's browser point. Holm talks to
+// `config.url`, but the browser may reach Jellyfin at a different address: the
+// operator's `public_url` wins when it is a plain http(s) URL.
+function linkBase(config, publicUrl) {
+	if (typeof publicUrl === 'string' && publicUrl.trim()) {
+		try {
+			const u = new URL(publicUrl.trim());
+			if (u.protocol === 'http:' || u.protocol === 'https:') return stripTrailingSlash(u.href);
+		} catch {
+			// Not a URL: use the server address.
+		}
+	}
+	return stripTrailingSlash(config.url);
 }
 
 function stripTrailingSlash(url) {
