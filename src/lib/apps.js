@@ -52,6 +52,21 @@ export function clickActionWarnings(appsConfig) {
 	return warnings;
 }
 
+// Extra entries for a tile's right-click menu (apps[].links): [{ label, url }].
+// They become hrefs, so only http(s) URLs with a label are kept.
+const MAX_MENU_LINKS = 8;
+export function menuLinks(item) {
+	if (!Array.isArray(item?.links)) return [];
+	const out = [];
+	for (const l of item.links) {
+		const label = typeof l?.label === 'string' ? l.label.trim().slice(0, 60) : '';
+		const url = typeof l?.url === 'string' ? l.url.trim() : '';
+		if (label && /^https?:\/\//i.test(url)) out.push({ label, url });
+		if (out.length >= MAX_MENU_LINKS) break;
+	}
+	return out;
+}
+
 export function buildAppsFromConfig(appsConfig) {
 	const items = normalizeAppsInput(appsConfig);
 
@@ -65,6 +80,7 @@ export function buildAppsFromConfig(appsConfig) {
 		ios: item.app_store?.ios || null,
 		android: item.app_store?.android || null,
 		extension: item.browser_extension || null,
+		links: menuLinks(item),
 		subtitle: item.setup_guide?.subtitle || null,
 		tags: Array.isArray(item.tags) ? item.tags : [],
 		onClick: clickAction(item)

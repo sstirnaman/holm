@@ -100,6 +100,9 @@ apps:
     self_hosted: true                      # listed in onboarding's services slide
     default_visible: true                  # placed on a new user's surface
     on_click: getting_started              # optional: open (default) | getting_started | menu
+    links:                                 # optional: extra entries in the right-click menu
+      - label: "Photos (archive server)"
+        url: "https://photos-archive.example.com"
     app_store:
       ios: "https://apps.apple.com/..."
       android: "https://play.google.com/..."
@@ -109,6 +112,8 @@ apps:
         - label: "Download"
           desc: "Get the app from your store."
 ```
+
+`links` adds your own entries to the tile's right-click / long-press menu, each a `label` (shown as the menu text, up to 60 characters) and an `http://` or `https://` `url`, opened in a new tab. They appear under **Open** and **Copy link**, in the order given. Use them for a second copy of the same app, another address for it, or a related page. Entries without a label or with another kind of URL are ignored, and at most 8 are shown.
 
 A setup guide opens as a **Getting started** card from the tile's right-click or long-press menu. It asks how the user wants to use the app: **In the browser** opens it, **In the mobile app** shows the server URL, store links and the steps. The line under the app name is the app's `onboarding.services[].desc`, or `setup_guide.subtitle` when there is none.
 
@@ -434,7 +439,7 @@ Every key Holm reads. "Reload" means a save takes effect without a restart.
 | `database.enabled` | bool | `true` | restart | `false` = preferences in each browser only, integrations off |
 | `database.path` | path | `./data/holm.db` | restart | `DATABASE_PATH` wins |
 | `customization.enabled` | bool | `false` | yes | Without it there is no Configure panel and the grid is fixed |
-| `apps[]` | list | `[]` | yes | Fields under [Apps](#apps): `id`, `name`, `url`, `icon`, `icon_mono`, `tile_color`, `self_hosted`, `default_visible`, `on_click`, `groups`, `tags` (shown on search results), `app_store`, `browser_extension`, `setup_guide`, `health` ([App health](#app-health)) |
+| `apps[]` | list | `[]` | yes | Fields under [Apps](#apps): `id`, `name`, `url`, `icon`, `icon_mono`, `tile_color`, `self_hosted`, `default_visible`, `on_click`, `groups`, `tags` (shown on search results), `links`, `app_store`, `browser_extension`, `setup_guide`, `health` ([App health](#app-health)) |
 | `health.source` / `url` / `api_key` / `every` / `page` | | none; `every` `60s` | yes | Where tile health comes from: `kener`, `uptime_kuma`, `gatus`, `cachet` or `http`. Any bad value, or an app with both `monitor` and `url`, is rejected like bad YAML. See [App health](#app-health) |
 | `search.enabled` / `url` / `param` / `name` / `icon` | | on, Google, `q` when the block is missing | yes | The fallback web search. A `search:` block needs `enabled: true` |
 | `search.on_focus` | `top` \| `in_place` | `top` | yes | Where the bar goes when it opens on desktop: slides up toward the top, or stays put. The default for everyone; each person can override it in Configure → Widgets → Search. Phones always pin it above the keyboard. Any other value is rejected like bad YAML, with the reason in the log |

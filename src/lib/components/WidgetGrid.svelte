@@ -3,7 +3,7 @@
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { browser } from '$app/environment';
 	import { prefs } from '$lib/stores/prefs.js';
-	import { buildAppsFromConfig, resolveIcon } from '$lib/apps.js';
+	import { buildAppsFromConfig, menuLinks, resolveIcon } from '$lib/apps.js';
 	import AppIcon from '$lib/components/AppIcon.svelte';
 	import { getBrandBgStyle } from '$lib/iconHelpers.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -69,6 +69,7 @@
 				ios: item.app_store?.ios || null,
 				android: item.app_store?.android || null,
 				extension: item.browser_extension || null,
+				links: menuLinks(item),
 				subtitle: item.setup_guide?.subtitle || null,
 				tags: Array.isArray(item.tags) ? item.tags : []
 			});

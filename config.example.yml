@@ -86,6 +86,9 @@ customization:
 #   default_visible Whether the app is auto-placed on a fresh user's surface. Default true.
 #                   Users can still add/remove from the catalog at any time.
 #   tags            Optional list of strings, shown (up to three) on the app's search result.
+#   links           Optional extra entries in the tile's right-click menu, as a list of
+#                   { label, url } (http or https; up to 8). For a second copy of the app,
+#                   another address for it, or a related page.
 #   app_store       Optional: { ios, android } links for onboarding.
 #   browser_extension  Optional URL for onboarding.
 #   on_click        What a plain click on the tile does: open (default), getting_started
